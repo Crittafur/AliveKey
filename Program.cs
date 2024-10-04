@@ -36,8 +36,8 @@ class Program
         Console.CancelKeyPress += (sender, e) =>
         {
             Console.WriteLine("Exiting...");
-            _isExiting = true;
             _timer.Dispose();
+            _isExiting = true;
             e.Cancel = true; // Prevent immediate termination
         };
 
