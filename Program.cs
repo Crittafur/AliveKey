@@ -18,7 +18,8 @@ class Program
 
     private static Timer _timer;
     private static InputSimulator _simulator;
-    private static int _interval = 4 * 60 * 1000; // default to 4 minutes
+    private static int _idleInterval = 4 * 60 * 1000; // default to 4 minutes
+    private static readonly int _pollingInterval = 1 * 60 * 1000; // default to 1 minute
     private static readonly int _buffer = 500;
     private static bool _isExiting = false;
 
@@ -27,11 +28,11 @@ class Program
         
         if (args.Length > 0 && int.TryParse(args[0], out var customInterval))
         {
-            _interval = customInterval * 1000 * 60;
+            _idleInterval = customInterval * 1000 * 60;
         }
 
         _simulator = new InputSimulator();
-        _timer = new Timer(Callback, null, 0, _interval);
+        _timer = new Timer(Callback, null, 0, _pollingInterval);
 
         Console.CancelKeyPress += (sender, e) =>
         {
@@ -53,7 +54,7 @@ class Program
     {
         try
         {
-            int inactivityThreshold = _interval - _buffer;
+            int inactivityThreshold = _idleInterval - _buffer;
 
             if (GetLastInputTime() > inactivityThreshold)
             {
