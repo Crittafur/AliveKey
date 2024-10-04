@@ -20,7 +20,6 @@ class Program
     private static InputSimulator _simulator;
     private static int _idleInterval = 4 * 60 * 1000; // default to 4 minutes
     private static readonly int _pollingInterval = 1 * 60 * 1000; // default to 1 minute
-    private static readonly int _buffer = 500;
     private static bool _isExiting = false;
 
     static void Main(string[] args)
@@ -54,7 +53,7 @@ class Program
     {
         try
         {
-            int inactivityThreshold = _idleInterval - _buffer;
+            int inactivityThreshold = _idleInterval;
 
             if (GetLastInputTime() > inactivityThreshold)
             {
