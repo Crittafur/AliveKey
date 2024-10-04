@@ -16,9 +16,11 @@ class Program
         public uint dwTime;
     }
 
-    static Timer timer;
-    static InputSimulator simulator;
-    static int _interval = 4 * 60 * 1000; // 4 minutes
+    private static Timer _timer;
+    private static InputSimulator _simulator;
+    private static int _interval = 4 * 60 * 1000; // default to 4 minutes
+    private static readonly int _buffer = 500;
+    private static bool _isExiting = false;
 
     static void Main(string[] args)
     {
@@ -28,29 +30,39 @@ class Program
             _interval = customInterval * 1000 * 60;
         }
 
-        timer = new Timer(Callback, null, 0, _interval);
-        simulator = new InputSimulator();
+        _simulator = new InputSimulator();
+        _timer = new Timer(Callback, null, 0, _interval);
 
-        Console.WriteLine("Alive started. Press any key to exit...");
-        Console.Read();
+        Console.CancelKeyPress += (sender, e) =>
+        {
+            Console.WriteLine("Exiting...");
+            _isExiting = true;
+            _timer.Dispose();
+            e.Cancel = true; // Prevent immediate termination
+        };
 
-        timer.Dispose();
+        Console.WriteLine("Program running. Press Ctrl+C to exit.");
+        
+        while (!_isExiting)
+        {
+            Thread.Sleep(100);
+        }
     }
 
     static void Callback(Object state)
     {
         try
         {
-            int inactivityThreshold = _interval -500;
+            int inactivityThreshold = _interval - _buffer;
 
             if (GetLastInputTime() > inactivityThreshold)
             {
-                simulator.Keyboard.KeyPress(VirtualKeyCode.SHIFT);
+                _simulator.Keyboard.KeyPress(VirtualKeyCode.SHIFT);
                 Console.WriteLine($"Input simulated at {DateTime.Now}.");
             }
             else
             {
-                Console.WriteLine("Skipped.");
+                Console.WriteLine("Skipped. Last input time is less than inactivity threshold.");
             }
         }
         catch (Exception e)
@@ -63,7 +75,11 @@ class Program
     {
         LASTINPUTINFO lastInputInfo = new();
         lastInputInfo.cbSize = (uint)Marshal.SizeOf(lastInputInfo);
-        GetLastInputInfo(ref lastInputInfo);
+        
+        if (!GetLastInputInfo(ref lastInputInfo))
+        {
+            throw new Exception("Failed to get last input info.");
+        }
 
         return (uint)Environment.TickCount - lastInputInfo.dwTime;
     }
