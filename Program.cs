@@ -4,13 +4,14 @@ using System.Threading;
 using InputSimulatorStandard;
 using InputSimulatorStandard.Native;
 
-class Program
+partial class Program
 {
-    [DllImport("user32.dll")]
-    static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool GetLastInputInfo(ref LASTINPUTINFO plii);
 
     [StructLayout(LayoutKind.Sequential)]
-    struct LASTINPUTINFO
+    internal struct LASTINPUTINFO
     {
         public uint cbSize;
         public uint dwTime;
